@@ -20,6 +20,8 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(express.json());
+
 // Usar las rutas de productos
 app.use('/api', producto_route);
 
