@@ -1,7 +1,8 @@
 // controllers/productController.js
 'use strict';
-
+const express = require('express')
 const db = require('../db/db');
+const oracledb = require('oracledb');
 
 async function listarProductos(req, res) {
     let connection;
@@ -20,8 +21,14 @@ async function listarProductos(req, res) {
 }
 
 async function crearProducto(req, res) {
+    if (!req.body || !req.body.informacionProducto || !req.body.detalleProducto) {
+        return res.status(400).send('Estructura de solicitud incorrecta');
+    }
+
+    // Extraer los datos del cuerpo de la solicitud
     const { informacionProducto: { id, nombre, descripcion }, detalleProducto: { cantidad, precio }, activo, idTipoGenero, idTipoColor, idTipoCategoriaProducto, idTipoTalla } = req.body;
 
+    // Validar que se hayan proporcionado todos los campos requeridos
     if (!id || !nombre || !descripcion || !cantidad || !precio || !activo || !idTipoGenero || !idTipoColor || !idTipoCategoriaProducto || !idTipoTalla) {
         return res.status(400).send('Faltan campos requeridos');
     }
@@ -107,8 +114,53 @@ async function actualizarProducto(req, res) {
     }
 }
 
+async function eliminarProducto(req, res) {
+    const { id, nombre, descripcion  } = req.params;
 
+    let connection;
+    try {
+        connection = await db.connectToDatabase();
 
+        await connection.execute(
+            `DELETE FROM PRODUCTOS WHERE INFORMACION_PRODUCTO = DETALLES(:id,:nombre,:descripcion)`,
+            {
+                id: id,
+                nombre: nombre,
+                descripcion: descripcion
+            }
+        );
+
+        await connection.commit();
+        res.status(200).send('Producto eliminado correctamente');
+    } catch (error) {
+        console.error("Error al eliminar producto:", error);
+        res.status(500).send('Error al eliminar producto');
+    }
+}
+
+// async function eliminarProducto(req, res) {
+//     const { id, nombre, descripcion} = req.params; // Obtener el ID del parámetro de la URL
+
+//     let connection;
+//     try {
+//         connection = await db.connectToDatabase();
+
+//         await connection.execute(
+//             `DELETE FROM PRODUCTOS WHERE INFORMACION_PRODUCTO = DETALLES(id,nombre,descripcion)`,
+//             {
+//                 id: id,
+//                 nombre: nombre, 
+//                 descripcion:descripcion
+//             }
+//         );
+
+//         await connection.commit(); // Confirmar la transacción
+//         res.status(200).send('Producto eliminado correctamente');
+//     } catch (error) {
+//         console.error("Error al eliminar producto:", error);
+//         res.status(500).send('Error al eliminar producto');
+//     }
+// }
 
 module.exports = {
     listarProductos,
