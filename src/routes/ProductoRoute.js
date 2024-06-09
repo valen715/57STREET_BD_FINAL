@@ -9,7 +9,7 @@ var api = express.Router();
 // Definir la ruta para listar productos
 api.get('/listarProductos', productController.listarProductos);
 api.post('/crearProducto', productController.crearProducto);
-api.put('/actualizarProducto/:id', productController.actualizarProducto);
+api.put('/actualizarProducto', productController.actualizarProducto);
 api.delete('/eliminarProducto/:id/:nombre/:descripcion', productController.eliminarProducto);
 
 // Exportar el router para que pueda ser utilizado en el servidor
